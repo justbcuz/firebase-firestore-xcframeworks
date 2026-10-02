@@ -32,7 +32,7 @@ if [[ $# -lt 1 ]]; then
   exit 2
 fi
 FIREBASE_VERSION="$1"
-REPO="${REPO:-arthurschiller/firebase-firestore-xcframeworks}"
+REPO="${REPO:-justbcuz/firebase-firestore-xcframeworks}"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
@@ -66,7 +66,7 @@ step "7/8  Build FirebaseFirestoreInternal.xcframework"
 bash scripts/build-firestore-internal.sh
 
 step "8/8  Package release (zip + checksums + URL-mode Package.swift)"
-bash scripts/build-release.sh "$FIREBASE_VERSION" "$REPO"
+bash scripts/build-release.sh "$FIREBASE_VERSION" "$REPO" "$FIREBASE_VERSION"
 
 OUT="$REPO_ROOT/build/release/$FIREBASE_VERSION"
 
