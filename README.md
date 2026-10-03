@@ -14,7 +14,7 @@ every clean build of every visionOS target. This repo eliminates that.
 
 - **`FirebaseFirestoreInternal.xcframework`** — Google's six untouched iOS /
   macOS / Catalyst / tvOS slices merged with our two visionOS slices
-  (`xros-arm64`, `xros-arm64-simulator`) built from Firebase 11.15.0's
+  (`xros-arm64`, `xros-arm64-simulator`) built from Firebase 12.19.1's
   Firestore C++ source.
 - **5 native dependencies** with visionOS slices added the same way:
   `absl.xcframework`, `openssl_grpc.xcframework`, `grpc.xcframework`,
@@ -35,8 +35,8 @@ In your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/firebase/firebase-ios-sdk.git", exact: "11.15.0"),
-    .package(url: "https://github.com/arthurschiller/firebase-firestore-xcframeworks.git", exact: "11.15.6"),
+    .package(url: "https://github.com/firebase/firebase-ios-sdk.git", exact: "12.19.1"),
+    .package(url: "https://github.com/justbcuz/firebase-firestore-xcframeworks.git", exact: "12.19.1"),
 ],
 
 targets: [
@@ -57,10 +57,12 @@ upstream docs say `import FirebaseFirestore`. The API surface is byte-identical
 to upstream — only the module name changed (necessary to avoid SPM
 target-name collisions when both packages are in the same resolved graph).
 
-Both packages must reference the **same underlying Firebase version**. The
-overlay's tag scheme is `<firebase_version>.<patch>` — e.g. `11.15.6` means
-"Firebase 11.15.0, overlay patch 6". So `firebase-ios-sdk @ 11.15.0` pairs
-with `firebase-firestore-xcframeworks @ 11.15.<latest>`.
+Both packages must reference the **same underlying Firebase version**. An
+overlay tag normally equals the Firebase iOS SDK version it wraps (e.g.
+`12.19.1` wraps Firebase `12.19.1`), so `firebase-ios-sdk @ 12.19.1` pairs
+with `firebase-firestore-xcframeworks @ 12.19.1`. When the overlay itself
+needs a fix on top of an unchanged Firebase version, a `.<patch>` suffix is
+appended — e.g. the earlier `11.15.6` meant "Firebase 11.15.0, overlay patch 6".
 
 If you need a Firebase version other than the ones listed in [Versioning](#versioning)
 below, see [Need a different Firebase version?](#need-a-different-firebase-version) —
@@ -69,7 +71,10 @@ version may need a one-time build by you or a request via an issue.
 
 After integration:
 
-- iOS / macOS / Catalyst / tvOS builds use Google's untouched binaries.
+- iOS / macOS / Catalyst / tvOS builds link Google's exact Firestore binary
+  slices (ABI-identical to the official release) — you still
+  `import FirebaseFirestorePrebuilt`; only the visionOS slices are built by
+  this overlay.
 - visionOS builds use our binary slices — no source compile, no env-var dance,
   no `Package.resolved` swap script, no Xcode Cloud workaround.
 
@@ -82,14 +87,15 @@ suffixes for fixes to the overlay itself.
 
 | Tag         | Firebase iOS SDK | Notes                                                                 |
 |-------------|------------------|-----------------------------------------------------------------------|
-| `11.15.6`   | 11.15.0          | **Current.** Use this if you're on Firebase 11.15.x.                  |
+| `12.19.1`   | 12.19.1          | **Current.** visionOS slices built with Xcode 27; adds Firestore pipeline / expression support (vendors re2). |
+| `11.15.6`   | 11.15.0          | Previous. absl ABI fix + `zip -y` Catalyst symlink fix.               |
 | `11.15.5`   | 11.15.0          | absl ABI fix; Catalyst zip was broken — superseded by 11.15.6.        |
 | `11.15.4`   | 11.15.0          | grpc/absl link fixes; Catalyst zip was broken — superseded by 11.15.6.|
 | `11.15.0–3` | 11.15.0          | Early iterations of the overlay layout. Don't use.                    |
 
 Patch-level fixes within a Firebase version came from this overlay's own ABI /
 packaging work, not from upstream — the Firestore C++ source is byte-identical
-to upstream Firebase 11.15.0.
+to the matching upstream Firebase release.
 
 ### Need a different Firebase version?
 

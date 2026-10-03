@@ -9,7 +9,7 @@
 
 import PackageDescription
 
-let firebaseVersion = "11.15.0"
+let firebaseVersion = "12.19.1"
 
 let package = Package(
     name: "firebase-firestore-xcframeworks",
@@ -130,6 +130,11 @@ let package = Package(
                 .headerSearchPath("../"),
                 .headerSearchPath("Source/Public/FirebaseFirestore"),
                 .headerSearchPath("Protos/nanopb"),
+                // re2 is header-only here; the compiled re2 symbols are bundled
+                // in the grpc xcframework. Matches upstream firebase-ios-sdk's
+                // Firestore target. Required since 12.19.x's expressions_eval.cc
+                // (#include "re2/re2.h").
+                .headerSearchPath("third_party/re2"),
                 .define("PB_FIELD_32BIT", to: "1"),
                 .define("PB_NO_PACKED_STRUCTS", to: "1"),
                 .define("PB_ENABLE_MALLOC", to: "1"),
